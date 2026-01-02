@@ -11,14 +11,14 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@nillion/blindfold": "^0.1.0",
+    "@nillion/secretvaults": "^1.0.0",
+    "@nillion/nuc": "^1.0.0",
     "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-tabs": "^1.1.1",
     "@radix-ui/react-toast": "^1.2.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "libsodium-wrappers": "^0.7.16",
     "lucide-react": "^0.468.0",
     "next": "^15.1.9",
     "react": "^19.0.0",
