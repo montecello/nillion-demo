@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
 
 export async function GET() {
+  // Mock attestation data structure that matches component expectations
+  // In production, this would fetch real attestation from Nillion nilAI TEE
   return NextResponse.json({
+    proof_id: 'att_' + Math.random().toString(36).substr(2, 9),
+    verified: true,
+    enclave_hash: 'a7f3c9e2d1b8f6a4e3c2d1b9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0',
+    timestamp: new Date().toISOString(),
     attestation_proof: {
       type: 'AMD-SEV-SNP',
-      verified: true,
-      timestamp: new Date().toISOString(),
       tcb_version: '0x0000000000000003',
       platform_info: {
         vendor: 'AMD',
