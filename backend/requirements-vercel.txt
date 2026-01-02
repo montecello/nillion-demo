@@ -1,0 +1,10 @@
+# Vercel doesn't support Rust compilation for blindfold
+# Using fallback encryption temporarily until we move to Railway/Render
+
+fastapi==0.115.0
+pydantic==2.9.2
+httpx==0.27.2
+python-dotenv==1.0.1
+jinja2==3.1.4
+cryptography==46.0.3
+python-multipart==0.0.20

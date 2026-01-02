@@ -11,39 +11,47 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
-# Import blindfold
+# Import blindfold with fallback for Vercel deployment
 try:
     import blindfold
     BLINDFOLD_AVAILABLE = True
     logger.info("✓ Nillion blindfold loaded successfully")
 except ImportError as e:
     BLINDFOLD_AVAILABLE = False
-    logger.error(f"✗ blindfold not available: {str(e)}")
-    raise ImportError("blindfold-py is required. Install with: pip install blindfold")
+    logger.warning(f"⚠️ blindfold not available, using cryptography fallback: {str(e)}")
+    # Vercel serverless doesn't support Rust compilation
+    # Use cryptography library as fallback
+    from cryptography.fernet import Fernet
 
 
 class EncryptionService:
     """
     Encryption service using Nillion's blindfold library
-    Provides privacy-preserving encryption for medical data
+    Falls back to cryptography.Fernet on Vercel (no Rust support)
     """
     
     def __init__(self):
-        logger.info("Initializing EncryptionService with Nillion blindfold")
-        
-        # Initialize blindfold key for single-node cluster (demo)
-        # In production, this would be configured for multi-node TEE cluster
-        try:
-            cluster = {'nodes': [{}]}  # Single node for demo
-            self.secret_key = blindfold.SecretKey.generate(cluster, {'store': True})
-            logger.info("✓ Generated blindfold SecretKey for single-node cluster")
-        except Exception as e:
-            logger.error(f"✗ Failed to initialize blindfold: {str(e)}")
-            raise
+        if BLINDFOLD_AVAILABLE:
+            logger.info("Initializing EncryptionService with Nillion blindfold")
+            try:
+                cluster = {'nodes': [{}]}  # Single node for demo
+                self.secret_key = blindfold.SecretKey.generate(cluster, {'store': True})
+                self.encryption_type = "nillion-blindfold"
+                logger.info("✓ Generated blindfold SecretKey for single-node cluster")
+            except Exception as e:
+                logger.error(f"✗ Failed to initialize blindfold: {str(e)}")
+                raise
+        else:
+            logger.info("Initializing EncryptionService with cryptography fallback (Vercel mode)")
+            # Generate Fernet key for fallback
+            self.secret_key = Fernet.generate_key()
+            self.fernet = Fernet(self.secret_key)
+            self.encryption_type = "fernet-fallback"
+            logger.info("✓ Generated Fernet key for fallback encryption")
     
     def encrypt_data(self, plaintext: str) -> Dict[str, Any]:
         """
-        Encrypt data using Nillion blindfold
+        Encrypt data using Nillion blindfold or Fernet fallback
         
         Args:
             plaintext: Data to encrypt
@@ -52,25 +60,32 @@ class EncryptionService:
             Dict with encrypted data and metadata
         """
         try:
-            # Encrypt using blindfold
-            ciphertext = blindfold.encrypt(self.secret_key, plaintext)
-            
-            # Convert to base64 for JSON serialization
-            if isinstance(ciphertext, bytes):
-                encrypted_b64 = base64.b64encode(ciphertext).decode('utf-8')
+            if BLINDFOLD_AVAILABLE:
+                # Use blindfold encryption
+                ciphertext = blindfold.encrypt(self.secret_key, plaintext)
+                
+                # Convert to base64 for JSON serialization
+                if isinstance(ciphertext, bytes):
+                    encrypted_b64 = base64.b64encode(ciphertext).decode('utf-8')
+                else:
+                    encrypted_b64 = str(ciphertext)
+                
+                algorithm = "XSalsa20-Poly1305"
             else:
-                # Ciphertext might already be serialized
-                encrypted_b64 = str(ciphertext)
+                # Use Fernet fallback
+                ciphertext = self.fernet.encrypt(plaintext.encode('utf-8'))
+                encrypted_b64 = base64.b64encode(ciphertext).decode('utf-8')
+                algorithm = "AES-128-CBC (Fernet)"
             
             metadata = {
-                "encryption_type": "nillion-blindfold",
-                "algorithm": "XSalsa20-Poly1305",
-                "mode": "single-node",
+                "encryption_type": self.encryption_type,
+                "algorithm": algorithm,
+                "mode": "single-node" if BLINDFOLD_AVAILABLE else "fallback",
                 "timestamp": datetime.utcnow().isoformat(),
                 "size_bytes": len(encrypted_b64),
             }
             
-            logger.debug(f"Encrypted {len(plaintext)} bytes -> {len(encrypted_b64)} bytes")
+            logger.debug(f"Encrypted {len(plaintext)} bytes -> {len(encrypted_b64)} bytes using {self.encryption_type}")
             
             return {
                 "encrypted": encrypted_b64,
@@ -83,7 +98,7 @@ class EncryptionService:
     
     def decrypt_data(self, encrypted_data: str, metadata: Dict[str, Any]) -> str:
         """
-        Decrypt data using Nillion blindfold
+        Decrypt data using Nillion blindfold or Fernet fallback
         
         Args:
             encrypted_data: Base64-encoded encrypted data
@@ -94,16 +109,16 @@ class EncryptionService:
         """
         try:
             # Decode from base64
-            try:
-                ciphertext = base64.b64decode(encrypted_data)
-            except Exception:
-                # Might already be in raw format
-                ciphertext = encrypted_data
+            ciphertext = base64.b64decode(encrypted_data)
             
-            # Decrypt using blindfold
-            plaintext = blindfold.decrypt(self.secret_key, ciphertext)
+            if BLINDFOLD_AVAILABLE:
+                # Decrypt using blindfold
+                plaintext = blindfold.decrypt(self.secret_key, ciphertext)
+            else:
+                # Decrypt using Fernet fallback
+                plaintext = self.fernet.decrypt(ciphertext).decode('utf-8')
             
-            logger.debug(f"Decrypted {len(encrypted_data)} bytes -> {len(plaintext)} bytes")
+            logger.debug(f"Decrypted {len(encrypted_data)} bytes -> {len(plaintext)} bytes using {self.encryption_type}")
             
             return plaintext
             

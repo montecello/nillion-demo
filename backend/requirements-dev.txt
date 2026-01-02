@@ -1,0 +1,10 @@
+# Local development with Nillion blindfold
+-r requirements.txt
+
+# Nillion blindfold encryption (requires Rust, not available on Vercel)
+blindfold==1.0.0rc0
+
+# Additional dev dependencies
+black==24.10.0
+pytest==8.3.4
+pytest-asyncio==0.24.0

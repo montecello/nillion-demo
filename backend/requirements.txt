@@ -4,8 +4,7 @@ pydantic==2.9.2
 httpx==0.27.2
 python-dotenv==1.0.1
 
-# Nillion blindfold encryption
-blindfold==1.0.0rc0
+# Encryption (cryptography is always available, blindfold optional for local/Railway)
 cryptography==46.0.3
 
 # Templating
