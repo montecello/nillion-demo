@@ -3,6 +3,8 @@
  * Uses Nillion blindfold for client-side encryption
  */
 
+'use client';
+
 import * as blindfold from '@nillion/blindfold';
 
 // Initialize blindfold key (single-node for demo)
@@ -24,7 +26,6 @@ export async function encryptData(plaintext: string): Promise<{
   metadata: Record<string, any>;
 }> {
   try {
-    // Initialize blindfold key
     const key = await initializeKey();
 
     // Encrypt string using blindfold
@@ -59,7 +60,6 @@ export async function decryptData(
   metadata: Record<string, any>
 ): Promise<string> {
   try {
-    // Initialize blindfold key
     const key = await initializeKey();
 
     // Parse encrypted data (could be string or JSON)
