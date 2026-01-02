@@ -1,9 +1,11 @@
-# Environment variables
+# Environment variables & API Keys
 .env
 .env.local
 .env.*.local
 backend/.env
 frontend/.env.local
+**/NILLION_API_KEY*
+**/.env.production
 
 # Python
 __pycache__/
@@ -25,11 +27,13 @@ frontend/node_modules/
 frontend/.next/
 frontend/out/
 
-# Logs
+# Logs (contains PHI and sensitive data)
 *.log
 logs/
 backend/logs/
 *.jsonl
+audit_*.jsonl
+**/logs/**
 
 # IDE
 .vscode/
