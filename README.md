@@ -13,7 +13,7 @@ This demo showcases how Nillion's **nilAI** (Trusted Execution Environment-based
 ## ✨ Key Features
 
 ### Privacy & Security
-- ✅ **Client-side encryption** (blindfold encryption library)
+- ✅ **Server-side encryption** (blindfold-py encryption library)
 - ✅ **TEE execution** (AMD SEV-SNP hardware security)
 - ✅ **Zero data logging** (queries never stored)
 - ✅ **Cryptographic attestation** (proof of secure execution)
@@ -34,16 +34,18 @@ This demo showcases how Nillion's **nilAI** (Trusted Execution Environment-based
 
 ```
 ┌─────────────────────────────────────────────────┐
-│  User Browser (Next.js Frontend)                │
+│  User Browser                                   │
 │  • Patient data input                           │
-│  • Client-side encryption (blindfold)           │
-│  • Compliance UI                                │
+│  • Tailwind CSS UI                              │
+│  • JavaScript API calls                         │
 └──────────────────┬──────────────────────────────┘
                    │ HTTPS (encrypted)
                    ▼
 ┌─────────────────────────────────────────────────┐
-│  Backend API (Next.js API Routes or FastAPI)    │
+│  FastAPI Backend (Python Monolith)              │
+│  • Jinja2 template rendering                    │
 │  • Request validation                           │
+│  • blindfold-py server-side encryption          │
 │  • Audit logging                                │
 │  • nilAI proxy                                  │
 └──────────────────┬──────────────────────────────┘
@@ -52,7 +54,7 @@ This demo showcases how Nillion's **nilAI** (Trusted Execution Environment-based
 ┌─────────────────────────────────────────────────┐
 │  nilAI (Nillion's Private LLM Service)          │
 │  • TEE execution (AMD SEV-SNP)                  │
-│  • Llama 3.3 70B model                          │
+│  • google/gemma-3-27b-it model                  │
 │  • Zero data retention                          │
 │  • Attestation generation                       │
 └─────────────────────────────────────────────────┘
@@ -61,59 +63,62 @@ This demo showcases how Nillion's **nilAI** (Trusted Execution Environment-based
 ## 📋 Tech Stack
 
 ### Frontend
-- **Next.js 14** (App Router)
-- **TypeScript**
-- **Tailwind CSS**
-- **blindfold-ts** (encryption)
-- **OpenAI SDK** (nilAI client)
+- **Jinja2 HTML Templates** (server-side rendering)
+- **Tailwind CSS** (CDN)
+- **Vanilla JavaScript**
 
 ### Backend
-- **Next.js API Routes** (primary)
-- **FastAPI** (alternative Python backend)
+- **FastAPI** (Python web framework)
+- **blindfold-py** (Nillion encryption)
+- **uvicorn** (ASGI server)
 
 ### Nillion Services
 - **nilAI** - Private LLM inference
-- **blindfold** - Client-side encryption
+- **blindfold** - Server-side encryption
 - **TEE** - Hardware security guarantees
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ (for frontend)
-- Python 3.11+ (for backend, optional)
+- Python 3.10+ 
 - Nillion API key ([get one here](https://subscription.nillion.com/))
 
 ### Setup (5 minutes)
 
 ```bash
-# 1. Clone and setup
-cd "/Users/powerfan/Desktop/DEMO PROJECT"
+# 1. Clone repository
+git clone https://github.com/montecello/nillion-demo.git
+cd nillion-demo
 
-# 2. Setup dependencies (symlinks)
-./scripts/setup.sh
-
-# 3. Configure environment
+# 2. Configure environment
+cd backend
 cp .env.example .env
 # Edit .env with your NILLION_API_KEY
 
-# 4. Install and run frontend
-cd frontend
-npm install
-npm run dev
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Start server
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 # 5. Open browser
-open http://localhost:3000
+open http://localhost:8000
 ```
 
 ## 📁 Project Structure
 
 ```
-DEMO PROJECT/
-├── frontend/           # Next.js app (main UI)
-├── backend/            # FastAPI (optional Python backend)
-├── nillion-deps/       # Symlinks to Nillion repos
+nillion-demo/
+├── backend/            # FastAPI Python monolith
+│   ├── app/
+│   │   ├── main.py             # FastAPI app entry point
+│   │   ├── routers/            # API endpoints
+│   │   ├── services/           # Encryption, nilAI client
+│   │   ├── templates/          # Jinja2 HTML templates
+│   │   └── models/             # Pydantic models
+│   └── requirements.txt
+├── frontend/           # (Legacy Next.js, not deployed)
 ├── docs/               # Documentation
-├── scripts/            # Automation scripts
 └── tests/              # Compliance & E2E tests
 ```
 
@@ -126,8 +131,8 @@ See [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) for detailed organization.
    - Data validated client-side
 
 2. **Encryption**
-   - blindfold encrypts data before transmission
-   - Status shown in UI
+   - blindfold-py encrypts data on the server
+   - Status shown in audit logs
 
 3. **Private AI Processing**
    - Request sent to nilAI via TEE
@@ -175,31 +180,33 @@ See [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) for detailed organization.
 - **Time**: 5 minutes
 - **Cost**: Free
 - **Use Case**: Development & testing
-- **Setup**: `npm run dev`
+- **Setup**: `uvicorn app.main:app --reload --port 8000`
 
-### Option 2: Vercel (Frontend Only)
+### Option 2: Railway/Render (Recommended)
 - **Time**: 10 minutes
 - **Cost**: Free tier available
 - **Use Case**: Demo presentations
-- **Setup**: `vercel deploy`
+- **Setup**: Connect GitHub repo, Railway auto-deploys
 
 ### Option 3: Full Production
 - **Time**: 1-2 hours
-- **Cost**: Variable (Azure VM + Vercel)
+- **Cost**: Variable (cloud hosting)
 - **Use Case**: Production deployment
 - **Setup**: See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
 
 ## 🧪 Testing
 
 ```bash
-# Run compliance tests
-npm run test:compliance
+# Test the API endpoints
+curl http://localhost:8000/health
 
-# E2E tests
-npm run test:e2e
+# Submit a medical query
+curl -X POST http://localhost:8000/api/medical/query \
+  -H "Content-Type: application/json" \
+  -d '{"query": "What are treatments for diabetes?", "patient_id": "demo_123"}'
 
-# Integration tests
-npm run test:integration
+# View audit logs
+curl http://localhost:8000/api/audit/logs
 ```
 
 ## 📚 Documentation
@@ -210,25 +217,27 @@ npm run test:integration
 - [docs/API_REFERENCE.md](docs/API_REFERENCE.md) - API documentation
 - [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) - Presentation guide
 
-## 🛠️ Development Scripts
+## 🛠️ Development Commands
 
 ```bash
-# Setup everything
-./scripts/setup.sh
+# Install dependencies
+pip install -r backend/requirements.txt
 
-# Start all services
-./scripts/start-dev.sh
+# Start development server
+cd backend
+uvicorn app.main:app --reload --port 8000
 
-# Deploy to Vercel
-./scripts/deploy-vercel.sh
+# Run with specific Python
+python -m uvicorn app.main:app --reload --port 8000
 
-# Run compliance checks
-./scripts/test-compliance.sh
+# Check encryption works
+python -c "import blindfold; print('✓ blindfold-py loaded')"
 ```
 
 ## 🌐 Live Demo
 
-**Coming Soon:** https://securemed-demo.vercel.app
+**Repository**: https://github.com/montecello/nillion-demo
+**Deployment**: Coming soon (Railway/Render)
 
 ## 🤝 Support
 
