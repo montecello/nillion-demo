@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Shield, CheckCircle, XCircle, Loader2, Download, FileCheck } from 'lucide-react';
+import { Shield, CheckCircle, XCircle, Loader2, Download, FileCheck, AlertTriangle } from 'lucide-react';
 import { getAttestationProof, verifyAttestationProof } from '@/lib/api';
 
 export default function AttestationProof() {
