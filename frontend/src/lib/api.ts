@@ -1,8 +1,9 @@
 /**
  * API Client for Medical AI Backend
+ * Uses Next.js API routes (relative URLs work in production)
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 interface MedicalQueryRequest {
   encrypted_query: string;
