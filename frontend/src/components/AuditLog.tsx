@@ -77,6 +77,21 @@ export default function AuditLog({ queryCount }: AuditLogProps) {
         </p>
       </div>
 
+      {/* Demo Mode Notice */}
+      <div className="bg-blue-50 border-2 border-blue-400 rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <h3 className="font-semibold text-blue-900 mb-1">
+              In-Memory Demo Logs
+            </h3>
+            <p className="text-sm text-blue-800">
+              Logs are stored in memory for demonstration. In production with API key, logs would be persisted to secure database with full HIPAA compliance.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Summary Stats */}
       {summary && (
         <div className="grid grid-cols-4 gap-4">

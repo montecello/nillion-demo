@@ -69,6 +69,22 @@ export default function AttestationProof() {
         </p>
       </div>
 
+      {/* Mock Data Warning */}
+      <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <h3 className="font-semibold text-yellow-900 mb-1">
+              Demo Mode - Mock Attestation Data
+            </h3>
+            <p className="text-sm text-yellow-800">
+              This is <strong>demonstration data</strong> showing the attestation structure. 
+              Real cryptographic TEE attestation from AMD SEV-SNP will be available after configuring your Nillion API key.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Error Display */}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-2">

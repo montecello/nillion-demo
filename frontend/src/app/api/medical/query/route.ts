@@ -8,8 +8,10 @@ export async function POST(request: NextRequest) {
     if (!process.env.NILLION_API_KEY) {
       return NextResponse.json(
         { 
-          error: 'NILLION_API_KEY not configured',
-          message: 'Get your API key at https://subscription.nillion.com/'
+          error: 'API Key Required',
+          message: 'Nillion API key not configured. This demo requires a valid API key for real nilAI TEE inference.',
+          details: 'Get your API key at https://subscription.nillion.com/',
+          demo_mode: true
         },
         { status: 401 }
       );
