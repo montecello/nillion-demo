@@ -1,62 +1,45 @@
 /**
- * Encryption Library Wrapper
- * Uses Web Crypto API (fallback) due to Vercel build limitations with libsodium WASM
- * 
- * NOTE: In production deployment with proper build environment, this would use
- * Nillion blindfold (@nillion/blindfold) for TEE-compatible encryption.
- * The blindfold integration is functional locally and in environments where
- * libsodium WASM can be properly bundled.
+ * Nillion Blindfold Encryption
+ * Uses @nillion/blindfold for client-side TEE-compatible encryption
  */
 
 'use client';
 
-// Web Crypto API implementation (compatible with Vercel deployment)
-const ENCRYPTION_KEY_LENGTH = 256;
-let cachedKey: CryptoKey | null = null;
+import { SecretKey, encrypt, decrypt } from '@nillion/blindfold';
 
-async function getEncryptionKey(): Promise<CryptoKey> {
-  if (!cachedKey) {
-    // Generate or retrieve key (in production, this would be derived from user credentials)
-    cachedKey = await crypto.subtle.generateKey(
-      { name: 'AES-GCM', length: ENCRYPTION_KEY_LENGTH },
-      true,
-      ['encrypt', 'decrypt']
-    );
+// Generate secret key for single-node cluster (demo)
+// In production, this would be configured for multi-node TEE cluster
+let secretKey: SecretKey | null = null;
+
+async function getSecretKey(): Promise<SecretKey> {
+  if (!secretKey) {
+    const cluster = { nodes: [{}] }; // Single node for demo
+    secretKey = await SecretKey.generate(cluster);
   }
-  return cachedKey;
+  return secretKey;
 }
 
 /**
- * Encrypt data client-side using Web Crypto API
+ * Encrypt data client-side using Nillion blindfold
  */
 export async function encryptData(plaintext: string): Promise<{
   encrypted: string;
   metadata: Record<string, any>;
 }> {
   try {
-    const key = await getEncryptionKey();
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-    const encoder = new TextEncoder();
-    const data = encoder.encode(plaintext);
+    const key = await getSecretKey();
+    const ciphertext = await encrypt(key, plaintext);
 
-    const encryptedBuffer = await crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv },
-      key,
-      data
-    );
-
-    // Combine IV and encrypted data
-    const combined = new Uint8Array(iv.length + encryptedBuffer.byteLength);
-    combined.set(iv, 0);
-    combined.set(new Uint8Array(encryptedBuffer), iv.length);
-
-    const base64 = btoa(String.fromCharCode(...combined));
+    // Convert to base64 for JSON serialization
+    const base64 = typeof ciphertext === 'string' 
+      ? ciphertext 
+      : btoa(String.fromCharCode(...new Uint8Array(ciphertext)));
 
     return {
       encrypted: base64,
       metadata: {
-        encryption_type: 'webcrypto-aes-gcm',
-        algorithm: 'AES-256-GCM',
+        encryption_type: 'nillion-blindfold',
+        algorithm: 'XSalsa20-Poly1305',
         mode: 'client-side',
         note: 'Production would use Nillion blindfold with TEE compatibility',
         timestamp: new Date().toISOString(),
@@ -74,27 +57,34 @@ export async function encryptData(plaintext: string): Promise<{
  */
 export async function decryptData(
   encryptedBase64: string,
+        timestamp: new Date().toISOString(),
+      },
+    };
+  } catch (error) {
+    console.error('Nillion blindfold encryption error:', error);
+    throw new Error('Failed to encrypt data with blindfold');
+  }
+}
+
+/**
+ * Decrypt data client-side using Nillion blindfold
+ */
+export async function decryptData(
+  encryptedBase64: string,
   metadata: Record<string, any>
 ): Promise<string> {
   try {
-    const key = await getEncryptionKey();
-    const combined = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0));
+    const key = await getSecretKey();
+    
+    // Decode from base64
+    const ciphertext = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0));
 
-    // Extract IV and encrypted data
-    const iv = combined.slice(0, 12);
-    const encryptedData = combined.slice(12);
+    const plaintext = await decrypt(key, ciphertext);
 
-    const decryptedBuffer = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv },
-      key,
-      encryptedData
-    );
-
-    const decoder = new TextDecoder();
-    return decoder.decode(decryptedBuffer);
+    return plaintext;
   } catch (error) {
-    console.error('Decryption error:', error);
-    throw new Error('Failed to decrypt data');
+    console.error('Nillion blindfold decryption error:', error);
+    throw new Error('Failed to decrypt data with blindfold');
   }
 }
 
