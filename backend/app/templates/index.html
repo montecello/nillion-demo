@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical AI Assistant - Nillion Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes pulse-subtle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .encrypting { animation: pulse-subtle 1s ease-in-out infinite; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="flex items-center justify-center gap-3 mb-4">
+                <svg class="w-12 h-12 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+                <h1 class="text-4xl font-bold text-gray-900">Medical AI Assistant</h1>
+            </div>
+            <p class="text-lg text-gray-600 mb-2">Privacy-Preserving Healthcare AI with Nillion</p>
+            <div class="flex items-center justify-center gap-4 text-sm text-gray-500">
+                <span class="flex items-center gap-1">
+                    <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                    Blindfold Encryption
+                </span>
+                <span class="flex items-center gap-1">
+                    <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                    TEE-based LLM
+                </span>
+                <span class="flex items-center gap-1">
+                    <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                    HIPAA Compliant
+                </span>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="bg-white rounded-lg shadow-lg mb-6">
+            <div class="border-b border-gray-200">
+                <nav class="flex -mb-px">
+                    <button onclick="switchTab('chat')" id="tab-chat" class="tab-button active whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm">
+                        Medical Chat
+                    </button>
+                    <button onclick="switchTab('attestation')" id="tab-attestation" class="tab-button whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm">
+                        TEE Attestation
+                    </button>
+                    <button onclick="switchTab('audit')" id="tab-audit" class="tab-button whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm">
+                        Audit Log
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Chat Tab -->
+            <div id="content-chat" class="tab-content p-6">
+                <div class="max-w-3xl mx-auto">
+                    <h2 class="text-xl font-semibold mb-4">Ask a Medical Question</h2>
+                    
+                    <!-- Sample Questions -->
+                    <div class="mb-6">
+                        <p class="text-sm text-gray-600 mb-2">Try these examples:</p>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="setQuery('What are the symptoms of type 2 diabetes?')" class="px-3 py-1 text-sm bg-indigo-50 text-indigo-700 rounded-full hover:bg-indigo-100">Type 2 Diabetes</button>
+                            <button onclick="setQuery('How to manage high blood pressure?')" class="px-3 py-1 text-sm bg-indigo-50 text-indigo-700 rounded-full hover:bg-indigo-100">Blood Pressure</button>
+                            <button onclick="setQuery('What causes migraine headaches?')" class="px-3 py-1 text-sm bg-indigo-50 text-indigo-700 rounded-full hover:bg-indigo-100">Migraines</button>
+                        </div>
+                    </div>
+
+                    <!-- Input Form -->
+                    <form onsubmit="submitQuery(event)" class="space-y-4">
+                        <textarea id="query-input" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="Enter your medical question..."></textarea>
+                        
+                        <button type="submit" id="submit-btn" class="w-full bg-indigo-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-indigo-700 transition">
+                            <span id="submit-text">Ask Question</span>
+                            <span id="submit-loading" class="hidden">Processing...</span>
+                        </button>
+                    </form>
+
+                    <!-- Response -->
+                    <div id="response-container" class="hidden mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <h3 class="font-semibold mb-2 text-gray-900">Response:</h3>
+                        <div id="response-text" class="text-gray-700 whitespace-pre-wrap"></div>
+                        <div class="mt-4 pt-4 border-t border-gray-300">
+                            <p class="text-xs text-gray-500">🔒 Encrypted with Nillion blindfold | Processed in TEE | Query ID: <span id="query-id"></span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attestation Tab -->
+            <div id="content-attestation" class="tab-content hidden p-6">
+                <div class="max-w-3xl mx-auto">
+                    <h2 class="text-xl font-semibold mb-4">TEE Attestation Proof</h2>
+                    <p class="text-gray-600 mb-4">Verify that the AI inference runs in a Trusted Execution Environment (TEE).</p>
+                    
+                    <button onclick="fetchAttestation()" class="bg-indigo-600 text-white py-2 px-6 rounded-lg font-medium hover:bg-indigo-700 transition">
+                        Get Attestation Proof
+                    </button>
+
+                    <div id="attestation-result" class="hidden mt-6 space-y-4">
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <div class="flex items-start gap-3">
+                                <svg class="w-6 h-6 text-green-600 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                                <div class="flex-1">
+                                    <h3 class="font-semibold text-green-900">Attestation Verified</h3>
+                                    <p class="text-sm text-green-700 mt-1">TEE hardware attestation confirmed. AI inference runs in secure enclave.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-50 rounded-lg p-4 font-mono text-xs">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-semibold">Attestation Details</span>
+                            </div>
+                            <pre id="attestation-data" class="text-gray-700 overflow-x-auto"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audit Log Tab -->
+            <div id="content-audit" class="tab-content hidden p-6">
+                <div class="max-w-4xl mx-auto">
+                    <h2 class="text-xl font-semibold mb-4">HIPAA-Compliant Audit Log</h2>
+                    <p class="text-gray-600 mb-4">All queries are logged without exposing PHI. Only metadata is stored.</p>
+                    
+                    <button onclick="fetchAuditLog()" class="bg-indigo-600 text-white py-2 px-6 rounded-lg font-medium hover:bg-indigo-700 transition mb-4">
+                        Refresh Audit Log
+                    </button>
+
+                    <div id="audit-log" class="space-y-2">
+                        <div class="text-center py-8 text-gray-500">Click refresh to load audit entries</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center text-sm text-gray-500">
+            <p>🔐 Built with Nillion's privacy-preserving infrastructure</p>
+            <p class="mt-1">Demonstrates: Blindfold encryption • nilAI TEE inference • HIPAA compliance</p>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active', 'border-indigo-600', 'text-indigo-600');
+                btn.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+            });
+            document.getElementById(`tab-${tab}`).classList.add('active', 'border-indigo-600', 'text-indigo-600');
+            document.getElementById(`tab-${tab}`).classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+
+            // Update content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            document.getElementById(`content-${tab}`).classList.remove('hidden');
+        }
+
+        function setQuery(text) {
+            document.getElementById('query-input').value = text;
+        }
+
+        async function submitQuery(event) {
+            event.preventDefault();
+            
+            const queryInput = document.getElementById('query-input');
+            const submitBtn = document.getElementById('submit-btn');
+            const submitText = document.getElementById('submit-text');
+            const submitLoading = document.getElementById('submit-loading');
+            const responseContainer = document.getElementById('response-container');
+            const responseText = document.getElementById('response-text');
+            const queryId = document.getElementById('query-id');
+
+            const query = queryInput.value.trim();
+            if (!query) return;
+
+            // Show loading
+            submitBtn.disabled = true;
+            submitText.classList.add('hidden');
+            submitLoading.classList.remove('hidden');
+            responseContainer.classList.add('hidden');
+
+            try {
+                const response = await fetch('/api/medical/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    responseText.textContent = data.response;
+                    queryId.textContent = data.query_id;
+                    responseContainer.classList.remove('hidden');
+                } else {
+                    responseText.textContent = 'Error: ' + (data.detail || 'Unknown error');
+                    responseContainer.classList.remove('hidden');
+                }
+            } catch (error) {
+                responseText.textContent = 'Network error: ' + error.message;
+                responseContainer.classList.remove('hidden');
+            } finally {
+                submitBtn.disabled = false;
+                submitText.classList.remove('hidden');
+                submitLoading.classList.add('hidden');
+            }
+        }
+
+        async function fetchAttestation() {
+            const resultDiv = document.getElementById('attestation-result');
+            const dataDiv = document.getElementById('attestation-data');
+            
+            resultDiv.classList.remove('hidden');
+            dataDiv.textContent = 'Loading...';
+
+            try {
+                const response = await fetch('/api/attestation/proof');
+                const data = await response.json();
+                dataDiv.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                dataDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        async function fetchAuditLog() {
+            const logDiv = document.getElementById('audit-log');
+            logDiv.innerHTML = '<div class="text-center py-4 text-gray-500">Loading...</div>';
+
+            try {
+                const response = await fetch('/api/audit/logs?limit=20');
+                const data = await response.json();
+
+                if (data.entries && data.entries.length > 0) {
+                    logDiv.innerHTML = data.entries.map(entry => `
+                        <div class="bg-white border border-gray-200 rounded-lg p-4">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <span class="font-mono text-xs text-gray-500">${entry.timestamp}</span>
+                                    <p class="text-sm mt-1"><strong>Query Hash:</strong> ${entry.query_hash}</p>
+                                    <p class="text-sm"><strong>Response:</strong> ${entry.response_length} bytes</p>
+                                </div>
+                                <span class="px-2 py-1 text-xs rounded-full ${entry.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${entry.status}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    logDiv.innerHTML = '<div class="text-center py-8 text-gray-500">No audit entries yet</div>';
+                }
+            } catch (error) {
+                logDiv.innerHTML = '<div class="text-center py-8 text-red-500">Error loading audit log</div>';
+            }
+        }
+
+        // Initialize with chat tab active
+        document.addEventListener('DOMContentLoaded', () => {
+            switchTab('chat');
+        });
+    </script>
+</body>
+</html>

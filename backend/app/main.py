@@ -3,18 +3,22 @@ Medical AI Assistant Backend API
 HIPAA/SOC2-Compliant Private Medical Inference using Nillion nilAI
 
 This FastAPI application provides:
-- Encrypted medical query processing
+- Encrypted medical query processing with blindfold-py
 - nilAI LLM inference proxy
 - TEE attestation verification
 - HIPAA-compliant audit logging
+- Web UI served via Jinja2 templates
 """
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 import logging
 from datetime import datetime
 import uvicorn
+from pathlib import Path
 
 from app.routers import medical, attestation, audit
 from app.services.audit_logger import AuditLogger
@@ -28,12 +32,15 @@ logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="Medical AI Assistant API",
+    title="Medical AI Assistant",
     description="HIPAA-compliant private medical inference using Nillion",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+# Setup Jinja2 templates
+templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 
 # Configure CORS
 app.add_middleware(
@@ -57,6 +64,12 @@ app.include_router(attestation.router, prefix="/api/attestation", tags=["Attesta
 app.include_router(audit.router, prefix="/api/audit", tags=["Audit"])
 
 
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request):
+    """Serve the main web UI"""
+    return templates.TemplateResponse("index.html", {"request": request})
+
+
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     """Log all incoming requests for audit trail"""
@@ -78,19 +91,6 @@ async def log_requests(request: Request, call_next):
     )
     
     return response
-
-
-@app.get("/")
-async def root():
-    """Root endpoint - API health check"""
-    return {
-        "status": "healthy",
-        "service": "Medical AI Assistant API",
-        "version": "1.0.0",
-        "privacy": "Nillion-powered encrypted inference",
-        "compliance": ["HIPAA", "SOC2"],
-        "timestamp": datetime.utcnow().isoformat()
-    }
 
 
 @app.get("/health")
