@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - NILAI_API_URL=http://nilai-api:8001
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=medical_user
+      - POSTGRES_PASSWORD=secure_password
+      - POSTGRES_DB=medical_ai_db
+    volumes:
+      - ./backend/logs:/app/logs
+    depends_on:
+      - postgres
+    networks:
+      - medical-ai-network
+
+  # Frontend (for production - use Next.js standalone build)
+  # For development, run `npm run dev` locally
+  
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=medical_user
+      - POSTGRES_PASSWORD=secure_password
+      - POSTGRES_DB=medical_ai_db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - medical-ai-network
+    ports:
+      - "5432:5432"
+
+networks:
+  medical-ai-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
