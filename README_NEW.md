@@ -1,6 +1,6 @@
-# 🏥 Medical AI Assistant - Privacy-Preserving Healthcare Demo
+# 🔐 Nillion Demo - Privacy-Preserving Application
 
-**HIPAA/SOC2-Compliant Medical AI powered by Nillion's Privacy Infrastructure**
+**Demonstrating Nillion's Privacy Infrastructure with Real-World Use Cases**
 
 [![Privacy](https://img.shields.io/badge/Privacy-End--to--End%20Encrypted-green)](https://nillion.com)
 [![Compliance](https://img.shields.io/badge/Compliance-HIPAA%20%7C%20SOC2-blue)](https://nillion.com)
