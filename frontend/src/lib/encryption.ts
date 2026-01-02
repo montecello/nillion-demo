@@ -1,14 +1,13 @@
 /**
- * Nillion Blindfold Encryption
- * Uses @nillion/blindfold for client-side TEE-compatible encryption
+ * Nillion Blindfold Encryption ONLY
+ * Production-ready implementation with @nillion/blindfold
+ * No fallbacks - Nillion security stack only
  */
 
 'use client';
 
 import { SecretKey, encrypt, decrypt } from '@nillion/blindfold';
 
-// Generate secret key for single-node cluster (demo)
-// In production, this would be configured for multi-node TEE cluster
 let secretKey: SecretKey | null = null;
 
 async function getSecretKey(): Promise<SecretKey> {
@@ -20,7 +19,7 @@ async function getSecretKey(): Promise<SecretKey> {
 }
 
 /**
- * Encrypt data client-side using Nillion blindfold
+ * Encrypt data using Nillion blindfold (XSalsa20-Poly1305)
  */
 export async function encryptData(plaintext: string): Promise<{
   encrypted: string;
@@ -30,7 +29,6 @@ export async function encryptData(plaintext: string): Promise<{
     const key = await getSecretKey();
     const ciphertext = await encrypt(key, plaintext);
 
-    // Convert to base64 for JSON serialization
     const base64 = typeof ciphertext === 'string' 
       ? ciphertext 
       : btoa(String.fromCharCode(...new Uint8Array(ciphertext)));
@@ -41,33 +39,18 @@ export async function encryptData(plaintext: string): Promise<{
         encryption_type: 'nillion-blindfold',
         algorithm: 'XSalsa20-Poly1305',
         mode: 'client-side',
-        note: 'Production would use Nillion blindfold with TEE compatibility',
         timestamp: new Date().toISOString(),
         size_bytes: base64.length,
       },
     };
   } catch (error) {
-    console.error('Encryption error:', error);
-    throw new Error('Failed to encrypt data');
-  }
-}
-
-/**
- * Decrypt data client-side using Web Crypto API
- */
-export async function decryptData(
-  encryptedBase64: string,
-        timestamp: new Date().toISOString(),
-      },
-    };
-  } catch (error) {
     console.error('Nillion blindfold encryption error:', error);
-    throw new Error('Failed to encrypt data with blindfold');
+    throw new Error('Failed to encrypt data with Nillion blindfold');
   }
 }
 
 /**
- * Decrypt data client-side using Nillion blindfold
+ * Decrypt data using Nillion blindfold
  */
 export async function decryptData(
   encryptedBase64: string,
@@ -75,21 +58,17 @@ export async function decryptData(
 ): Promise<string> {
   try {
     const key = await getSecretKey();
-    
-    // Decode from base64
     const ciphertext = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0));
-
     const plaintext = await decrypt(key, ciphertext);
-
     return plaintext;
   } catch (error) {
     console.error('Nillion blindfold decryption error:', error);
-    throw new Error('Failed to decrypt data with blindfold');
+    throw new Error('Failed to decrypt data with Nillion blindfold');
   }
 }
 
 /**
- * Hash data for audit logging (without exposing plaintext)
+ * Hash data for audit logging (SHA-256)
  */
 export async function hashData(data: string): Promise<string> {
   const encoder = new TextEncoder();

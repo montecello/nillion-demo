@@ -4,12 +4,23 @@ export async function POST(request: NextRequest) {
   try {
     const { query, patient_id, encrypted_data } = await request.json();
 
+    // Require NILLION_API_KEY - no fallbacks
+    if (!process.env.NILLION_API_KEY) {
+      return NextResponse.json(
+        { 
+          error: 'NILLION_API_KEY not configured',
+          message: 'Get your API key at https://subscription.nillion.com/'
+        },
+        { status: 401 }
+      );
+    }
+
     // Forward to Nillion nilAI API
     const nilaiResponse = await fetch('https://nilai-a779.nillion.network/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.NILLION_API_KEY || 'demo-key'}`,
+        'Authorization': `Bearer ${process.env.NILLION_API_KEY}`,
       },
       body: JSON.stringify({
         model: 'google/gemma-3-27b-it',
@@ -29,18 +40,15 @@ export async function POST(request: NextRequest) {
     });
 
     if (!nilaiResponse.ok) {
-      console.log('Using mock response (nilAI API unavailable or demo mode)');
-      // Mock response for demo without API key
-      return NextResponse.json({
-        response: `[MOCK RESPONSE - Get API key at https://subscription.nillion.com/]\n\nBased on your query: "${query}"\n\nThis is a demonstration response. In production, this would be processed by Nillion's nilAI TEE-based LLM for private inference.\n\nKey features:\n- Client-side encryption (blindfold-ts)\n- TEE execution (AMD SEV-SNP)\n- Zero data logging\n- HIPAA compliant\n\nFor actual medical advice, please consult a healthcare professional.`,
-        encrypted: encrypted_data || null,
-        metadata: {
-          model: 'demo-mode',
-          encryption_type: 'client-side-blindfold',
-          tee_verified: false,
-          timestamp: new Date().toISOString(),
+      const errorData = await nilaiResponse.text();
+      return NextResponse.json(
+        { 
+          error: 'Nillion nilAI API error',
+          details: errorData,
+          status: nilaiResponse.status
         },
-      });
+        { status: nilaiResponse.status }
+      );
     }
 
     const data = await nilaiResponse.json();
@@ -50,7 +58,7 @@ export async function POST(request: NextRequest) {
       encrypted: encrypted_data || null,
       metadata: {
         model: 'google/gemma-3-27b-it',
-        encryption_type: 'client-side-blindfold',
+        encryption_type: 'nillion-blindfold',
         tee_verified: true,
         timestamp: new Date().toISOString(),
       },
