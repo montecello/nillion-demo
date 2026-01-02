@@ -28,7 +28,7 @@ export async function sendMedicalQuery(
   request: MedicalQueryRequest
 ): Promise<MedicalQueryResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/medical/query`, {
+    const response = await fetch(`${API_BASE_URL}/medical/query`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -53,7 +53,7 @@ export async function sendMedicalQuery(
  */
 export async function getAttestationProof(): Promise<any> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/attestation/proof`);
+    const response = await fetch(`${API_BASE_URL}/attestation/proof`);
 
     if (!response.ok) {
       throw new Error('Failed to fetch attestation proof');
@@ -71,7 +71,7 @@ export async function getAttestationProof(): Promise<any> {
  */
 export async function verifyAttestationProof(proofData: string): Promise<any> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/attestation/verify`, {
+    const response = await fetch(`${API_BASE_URL}/attestation/verify`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -103,7 +103,7 @@ export async function getAuditLogs(
       ...(eventType && { event_type: eventType }),
     });
 
-    const response = await fetch(`${API_BASE_URL}/api/audit/logs?${params}`);
+    const response = await fetch(`${API_BASE_URL}/audit/logs?${params}`);
 
     if (!response.ok) {
       throw new Error('Failed to fetch audit logs');
@@ -122,7 +122,7 @@ export async function getAuditLogs(
 export async function getAuditSummary(hours: number = 24): Promise<any> {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/api/audit/summary?hours=${hours}`
+      `${API_BASE_URL}/audit/summary?hours=${hours}`
     );
 
     if (!response.ok) {
@@ -141,7 +141,7 @@ export async function getAuditSummary(hours: number = 24): Promise<any> {
  */
 export async function getMedicalServiceStatus(): Promise<any> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/medical/status`);
+    const response = await fetch(`${API_BASE_URL}/medical/status`);
 
     if (!response.ok) {
       throw new Error('Failed to fetch service status');
