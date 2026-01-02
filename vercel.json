@@ -2,14 +2,17 @@
   "version": 2,
   "builds": [
     {
-      "src": "backend/app/main.py",
+      "src": "backend/index.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "backend/app/main.py"
+      "dest": "backend/index.py"
     }
-  ]
+  ],
+  "env": {
+    "NILAI_API_URL": "https://nilai-a779.nillion.network/v1"
+  }
 }
