@@ -9,7 +9,7 @@ import { Shield, Lock, FileCheck, Activity } from 'lucide-react';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<'chat' | 'attestation' | 'audit'>('chat');
-  const [encryptionEnabled, setEncryptionEnabled] = useState(false);
+  const [encryptionEnabled, setEncryptionEnabled] = useState(true);
   const [queryCount, setQueryCount] = useState(0);
 
   return (

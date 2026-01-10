@@ -27,15 +27,22 @@ export async function encryptData(plaintext: string): Promise<{
   metadata: Record<string, any>;
 }> {
   // Data is sent to server where it's encrypted server-side
+  console.log('🔐 [ENCRYPTION] Using Nillion secretvaults (server-side)');
+  console.log('📏 [ENCRYPTION] Plaintext size:', plaintext.length, 'bytes');
+  
+  const metadata = {
+    algorithm: 'server-side-encryption',
+    encryption_type: 'nillion-secretvaults',
+    mode: 'server-side',
+    timestamp: new Date().toISOString(),
+    size_bytes: plaintext.length,
+  };
+  
+  console.log('✅ [ENCRYPTION] Metadata prepared for Nillion blind compute');
+  
   return {
     encrypted: plaintext, // Server will encrypt before sending to nilAI
-    metadata: {
-      algorithm: 'server-side-encryption',
-      encryption_type: 'nillion-secretvaults',
-      mode: 'server-side',
-      timestamp: new Date().toISOString(),
-      size_bytes: plaintext.length,
-    },
+    metadata,
   };
 }
 

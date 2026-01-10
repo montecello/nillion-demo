@@ -10,6 +10,7 @@ interface MedicalQueryRequest {
   encryption_metadata: Record<string, any>;
   session_id: string;
   request_attestation: boolean;
+  search_literature?: boolean; // Optional PubMed literature search
 }
 
 interface MedicalQueryResponse {
@@ -19,6 +20,9 @@ interface MedicalQueryResponse {
   query_id: string;
   processing_time_ms: number;
   timestamp: string;
+  cited_articles?: Array<{pmid: string; title: string}>;
+  initial_analysis?: string; // Stage 1: AI's initial diagnosis
+  search_keywords?: string; // Keywords used for PubMed search
 }
 
 /**
