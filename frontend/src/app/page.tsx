@@ -19,7 +19,7 @@ export default function Home() {
         <div className="flex items-center justify-center gap-3 mb-4">
           <Shield className="w-12 h-12 text-indigo-600" />
           <h1 className="text-4xl font-bold text-gray-900">
-            Medical AI Assistant
+            AI Medical Assistant
           </h1>
         </div>
         <p className="text-lg text-gray-600 mb-2">

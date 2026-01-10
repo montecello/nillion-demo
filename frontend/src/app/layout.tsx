@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Medical AI Assistant - Privacy-Preserving Healthcare",
-  description: "HIPAA-compliant medical AI assistant powered by Nillion's privacy-preserving infrastructure",
+  title: "AI Medical Assistant - Privacy-Preserving Healthcare",
+  description: "HIPAA-compliant AI medical assistant powered by Nillion's privacy-preserving infrastructure",
 };
 
 export default function RootLayout({
